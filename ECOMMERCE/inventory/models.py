@@ -1,7 +1,16 @@
 from django.db import models
 import uuid
 # Create your models here.
+class Category(models.Model):
+    name=models.CharField(max_length=100)
+    slug=models.SlugField(unique=True)
+    is_active=models.BooleanField()
+    parent=models.ForeignKey('self',on_delete=models.PROTECT)
 
+class SeasonalEvents(models.Model):
+    start_date=models.DateTimeField()
+    end_date=models.DateTimeField()
+    name=models.CharField(max_length=100,unique=True)
 class Product(models.Model):
     IN_STOCK="IS"
     OUT_OF_STOCK="OOS"
@@ -25,6 +34,8 @@ class Product(models.Model):
         choices=STOCK_STATUS,
         default=OUT_OF_STOCK
         )
+    category=models.ForeignKey(Category,on_delete=models.SET_NULL,null=True)
+    seasonal_event=models.ForeignKey(SeasonalEvents,on_delete=models.SET_NULL,null=True)
 
 class ProductLine(models.Model):
     price=models.DecimalField()
@@ -33,19 +44,15 @@ class ProductLine(models.Model):
     is_active=models.BooleanField(default=False)
     order=models.IntegerField()
     weight=models.FloatField()
+    product=models.ForeignKey(Product,on_delete=models.PROTECT)
 
 class ProductImage(models.Model):
     name=models.CharField(max_length=100)
     alternative_text=models.CharField(max_length=100)
     url=models.ImageField()
     order=models.IntegerField()
+    product_line=models.ForeignKey(ProductLine,on_delete=models.CASCADE)
 
-class Category(models.Model):
-    name=models.CharField(max_length=100)
-    slug=models.SlugField(unique=True)
-    is_active=models.BooleanField()
 
-class SeasonalEvents(models.Model):
-    start_date=models.DateTimeField()
-    end_date=models.DateTimeField()
-    name=models.CharField(max_length=100,unique=True)
+
+
