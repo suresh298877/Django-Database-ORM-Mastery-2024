@@ -1,11 +1,32 @@
-from django.db import models
 import uuid
+
+from django.db import models
+from django.utils.text import slugify
+
+
 # Create your models here.
 class Category(models.Model):
-    name=models.CharField(max_length=100)
-    slug=models.SlugField(unique=True)
+    name=models.CharField(
+        max_length=100,
+        verbose_name="First Name",
+        help_text="Enter name of inventory category"
+        )
+    slug=models.SlugField(unique=True,null=True,blank=True)
     is_active=models.BooleanField()
-    parent=models.ForeignKey('self',on_delete=models.PROTECT)
+    parent=models.ForeignKey('self',on_delete=models.PROTECT,null=True,blank=True)
+
+    class Meta:
+        verbose_name="Inventory Category"
+        verbose_name_plural="Categories"
+    
+    def save(self,*args,**kwargs):
+        if not self.slug:
+            self.slug=slugify(self.name)
+        super().save(*args,**kwargs)
+
+
+    def __str__(self):
+        return self.name
 
 
 class SeasonalEvents(models.Model):
@@ -16,18 +37,21 @@ class SeasonalEvents(models.Model):
 
 class ProductType(models.Model):
     name=models.CharField(max_length=100)
-    parent=models.ForeignKey("self",on_delete=models.CASCADE)
+    parent=models.ForeignKey("self",on_delete=models.CASCADE,null=True,blank=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Product(models.Model):
     IN_STOCK="IS"
     OUT_OF_STOCK="OOS"
-    BACKORDERED="BO"
+    BACK_ORDERED="BO"
 
     STOCK_STATUS={
     IN_STOCK : "In Stock",
     OUT_OF_STOCK : "Out of stock",
-    BACKORDERED : "Back Ordered",
+    BACK_ORDERED : "Back Ordered",
     }
     pid=models.CharField(max_length=255)
     name=models.CharField(max_length=100)
@@ -35,7 +59,7 @@ class Product(models.Model):
     description=models.TextField(null=True)
     is_digital=models.BooleanField(default=False)
     created_at=models.DateTimeField(auto_now_add=True, editable=False)
-    updated_at=models.DateTimeField(auto_now_add=False,editable=False)
+    updated_at=models.DateTimeField(auto_now=True,editable=False)
     is_active=models.BooleanField(default=False)
     stock_status=models.CharField(
         max_length=3,
@@ -43,8 +67,11 @@ class Product(models.Model):
         default=OUT_OF_STOCK
         )
     category=models.ForeignKey(Category,on_delete=models.SET_NULL,null=True)
-    seasonal_event=models.ForeignKey(SeasonalEvents,on_delete=models.SET_NULL,null=True)
+    seasonal_event=models.ForeignKey(SeasonalEvents,on_delete=models.SET_NULL,null=True,blank=True)
     product_type=models.ManyToManyField(ProductType,related_name="product_type")
+
+    def __str__(self):
+        return self.name
 
 
 class Attribute(models.Model):
