@@ -13,6 +13,14 @@ class CategoryAdmin(admin.ModelAdmin):
     search_fields=['name','slug']
 
 
+class ProductLineInline(admin.StackedInline):
+    model=ProductLine
+    extra=1 
+
+class ProductAdmin(admin.ModelAdmin):
+    inlines=[ProductLineInline]
+
+
 class ProductAdmin(admin.ModelAdmin):
     list_filter=('stock_status',)
 admin.site.register(Category,CategoryAdmin)
