@@ -1,0 +1,11 @@
+services:
+  pgdb:
+    container_name: pgdb
+    image: postgres
+    restart: always
+    ports:
+      - "5432:5432"  # Map port 5432 of the container to port 5432 on the host machine
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
